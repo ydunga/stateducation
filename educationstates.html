@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <link rel = "stylesheet" href = "educationstates.css">
+    <title>Document</title>
+</head>
+<body>
+    <h1>State wise education on spending</h1>
+    <div id = "educationchart"></div>
+    <p> How does this compare to other states?</p>
+    <div id = "comparisonchart"></div>
+    <script>
+        var margin = {top: 30, right: 30, bottom: 70, left: 60},
+    width = 500 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+    var svg = d3.select("#educationchart")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .attr("viewBox", "0 0 500 500")
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+
+          d3.csv("https://raw.githubusercontent.com/ydunga/stateducation/main/education.csv", function(d){
+              return{ date: d3.timeParse("%Y")(d.Year), value: d.Delhi}
+          },
+          function(data) { 
+    var x = d3.scaleTime()
+  .domain(d3.extent(data, function(d) { return d.date; }))
+  .range([ 0, width ]);
+svg.append("g")
+  .attr("transform", "translate(0," + height + ")")
+  .call(d3.axisBottom(x));
+
+  var y = d3.scaleLinear()
+  .domain([6, d3.max(data, function(d) { return +d.value+5; })])
+  .range([ height, 0 ]); 
+svg.append("g")
+  .call(d3.axisLeft(y));
+
+  svg.append("rect")
+  .attr("x", "240")
+  .attr("y", "0")
+  .attr("width", "180")
+  .attr("height", "400")
+  .style("fill", "lightgrey")
+  .style("opacity", "0.5");
+
+svg.append("text")
+.text("NCT Delhi - Expenditure on education/aggregate expenditure")
+.attr("font-style", "italic")
+.attr("x", 10)
+.attr("y", 0 - (margin.top / 2));
+
+
+
+    svg.append("path")
+  .datum(data)
+  .attr("id", "educationline")
+  .attr("fill", "none")
+  .attr("stroke", "#03a5fc")
+  .attr("stroke-width", 2)
+  .attr("stroke-dasharray", "600")
+  .attr("stroke-dashoffset", "600")
+  .attr("d", d3.line()
+    .x(function(d) { return x(d.date) })
+    .y(function(d) { return y(d.value) })
+    )
+          } 
+
+          );
+
+          var margin2 = {top: 10, right: 30, bottom: 250, left: 20},
+    width2 = 650 - margin.left - margin.right,
+    height2 = 550 - margin.top - margin.bottom;
+
+    var svg2 = d3.select("#comparisonchart")
+    .append("svg")
+    .attr("width", width2 + margin2.left + margin2.right)
+    .attr("height", height2 + margin2.top + margin2.bottom)
+    .attr("viewBox", "0 0 650 550")
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+d3.csv("https://raw.githubusercontent.com/ydunga/stateducation/main/5yearavg.csv",
+function(data){
+    var x = d3.scaleBand()
+  .range([ 0, width2 ])
+  .domain(data.map(function(d) { return d.State; }))
+  .padding(0.3);
+svg2.append("g")
+  .attr("transform", "translate(0," + height2 + ")")
+  .call(d3.axisBottom(x))
+  .selectAll("text")
+    .attr("transform", "translate(-15,10)rotate(-90)")
+    .style("text-anchor", "end")
+    .style("font-size", "15px");
+
+// Add Y axis
+var y = d3.scaleLinear()
+  .domain([0, 30])
+  .range([ height2, 0]);
+svg2.append("g")
+  .call(d3.axisLeft(y));
+
+// Bars
+svg2.selectAll("mybar")
+  .data(data)
+  .enter()
+  .append("rect")
+    .attr("x", function(d) { return x(d.State); })
+    .attr("y", function(d) { return y(d.share); })
+    .attr("width", x.bandwidth())
+    .attr("height", function(d) { return height2 - y(d.share); })
+    .attr("fill", function(d){
+        if (d.State == "Delhi"){
+            return "#03a5fc"
+        }
+        else {
+            return "#fbe704"
+        }
+    })
+    .attr("stroke", "black");
+
+    svg2.append("text")
+.text("Last 5 year avg of expenditure on education/aggregate expenditure")
+.attr("font-style", "italic")
+.attr("x", 50)
+.attr("y", 0 - (margin.top / 2));
+ 
+})
+
+
+    </script>
+</body>
+</html>
